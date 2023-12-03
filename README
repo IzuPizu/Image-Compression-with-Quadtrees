@@ -1,0 +1,126 @@
+/* URECHE Andreea-Maria - 312CC*/
+------------------- TEMA 2 -------------------------
+
+Pentru rezolvarea acestei teme am inceput prin a
+crea un header file ce contine structurile de date
+folosite de-alungul programului , si anume:
+Pixel -> retine valorile pentru tripletul RGB
+QuadTreeNode -> contine pointerii catre nodurile copil
+                (child1 , .. ,child4);
+                un camp 'color' de tip Pixel ;
+                'is_leaf' ce va retine valoarea 1 in 
+                 cazul unui nod frunza , sau 0 in caz contrar;
+                'size_leaf' retine dimensiunea laturii unui
+                bloc de pixeli corespunzator nodului frunza
+
+In functia main am determinat cerinta ce trebuie rezolvata
+in functie de argumentele primite in linia de comanda si am
+retinut fisierele de input/output ,precum si 
+ factorul de compresie ,acolo unde este cazul.Fisierele au
+ fost deschise inca de la inceput pentru citire din binar ,
+ respectiv scriere in binar , iar in variabilele 
+ 'flag_[]' am setat valoarea 1 in functie de cerinta 
+ care trebuie rezolvata .
+ Pentru cerintele 1 si 2 am inceput prin a citi din fisierul
+ de tip PPM :tipul ,dimensiunile si valoarea maxima .
+ Apoi am alocat spatiu pentru matricea de pixeli (de tip
+ Pixel) si am citit din fisier imaginea folosind 2 bucle
+ for si iterand prin pixelii din fisier .
+
+
+-----CERINTA 1-----
+Pentru rezolvarea acestei cerinte,am construit arborele
+de compresie pornind de la imaginea din fisierul PPM ,
+si am determinat statisticile cerute, afisand in fiserul
+de output :  numarul de niveluri din arbore , 
+numarul de blocuri pentru care scorul similaritatii este <= 
+decat factorul furnizat (numarul de noduri terminale) ,
+dimensiunea laturii patratului pentru cea mai mare zona din 
+imagine care a ramas nedivizata (cea mai apropiata frunza 
+de nodul radacina al arborelui).
+
+Voi explica pe scurt functionalitatea fiecarei functii
+folosite pentru cerinta 1:
+
+QuadTreeNode *createQuadTree -> construieste in mod recursiv
+arborele de compresie . Functia primeste ca parametrii imaginea(matricea
+de pixeli citita),dimensiunea imaginii , factorul de compresie , precum
+si 2 coordonate(x si y) ce initial vor fi setate pe (0,0).
+Functia aloca mai intai spatiu pentru un nod in arbore si initalizeaza
+descendentii cu NULL.  Conditia de baza o reprezinta
+valoarea rezultata de functia 'mean_score' . Daca functia
+intoarce valoarea 0 , inseamna ca s-a ajuns la un bloc ce poate
+fi reprezentat ca nod frunza in arbore (deci nu mai este nevoie de divizare).
+In acest caz, setam campul 'is_leaf' al nodului pe 1 , 'size_leaf' 
+retine dimensiunea acelui bloc (latura), iar tripletul de culori
+RGB din structura nodului vor lua valorile corespunzatoare din culoarea
+medie a blocului (componentele pentru culoarea medie).
+In cazul in care functia 'mean_score' intoarce o alta valoare
+fata de 0 , inseamna ca blocul nu poate fi tratat ca un nod
+frunza , iar matricea va trebui divizata in 4 parti egale .
+Astfel , vom creea in mod recursiv cele 4 noduri copil,
+corespunzatoare celor 4 zone din matrice, respectand regula
+de alocare a sferturilor , folosind coordonatele specifice
+fiecarei zone.Noua dimensiune cu care functia va fi apelata
+in mod recursiv pentru divizarea matricii in 4 zone va fi 
+mereu injumatatita (latura matricii /2).
+
+int mean_score -> functia primeste ca parametrii cordoonatele(x,y)
+corespunzatoare blocului de pixeli , dimensiunea laturii blocului,
+matricea de pixeli initiala ,factorul de compresie , precum si 
+componentele pentru culoarea medie a blocului (necalculate).
+Functia intoarce valoarea 0 daca blocul de pixeli nu are nevoie
+de divizare in alte 4 zone (poate fi reprezentat ca nod frunza),
+sau 1 in caz contrar.Aceasta incepe prin a calcula sumele pentru
+componentele de RED , GREEN , BLUE din submatricea de pixeli , iar
+apoi calculeaza media aritmetica a acestora . Apoi se calculeaza
+scorul de similaritate conform formulelor precizate .
+Daca scorul de similaritate este mai mic sau egal decat factorul
+de compresie furnizat , functia intoarce valoarea 0 (putem reprezenta
+submatricea de pixeli ca nod frunza in arbore). In caz contar,
+functia intoarce valoarea 1.
+
+int findclosestleaf(QuadTreeNode *root) -> determina dimensiunea
+laturii patratului pentru cea mai mare zona din imagine care 
+a ramas nedivizata . Aceasta semnifica defapt , cea mai apropiata
+frunza de nodul radacina al arborelui. 
+
+int findMax(int a, int b) -> returneaza maximul dintre 2 valori
+
+int getLeafCount(QuadTreeNode *node) -> determina numarul de
+frunze (noduri terminale) din arbore , adica numarul de blocuri din
+ imagine pentru care scorul similaritatii pixelilor 
+ este mai mic sau egal decat factorul furnizat.
+
+ int countLevels(QuadTreeNode *node, int level) -> calculeaza numarul
+ de niveluri din arborele cuaternar 
+
+-----CERINTA 2-----
+In rezolvarea acestei cerinte , m-am folosit de arborele cuaternar
+deja creat la cerinta 1. 
+In functia main , am scris mai intai in fisierul comprimat 
+dimensiunea imaginii , iar apoi am apelat functia 
+'printLevelOrder'
+
+Voi explica functionalitatile celor 2 functii folosite:
+void printLevelOrder -> functia primeste ca parametrii un pointer 
+la structura nodului si fisierul de compresie in care se va scrie 
+parcugerea arborelui pe nivel. Functia asigneaza unei variabile 'h' 
+numarul de niveluri de arbore , iar cu o bucla for este 
+parcurs fiecare nivel din arbore , apeland urmatoarea functie
+pe care o voi explica 'printCurrentLevel'.
+
+void printCurrentLevel -> primeste ca parametrii un pointer la
+structura nodului, nivelul curent din arbore si 
+fisierul comprimat. Functia afiseaza nodurile din parcurgerea
+pe nivel a arborelui astfel : 
+Daca nodul este de tip frunza(nod extern) , se va scrie in fisier tipul nodului
+(in acest caz ,1) , precum si valorile componentelor pentru RED,GREEN,BLUE
+pentru zona descrisa de nod.
+Daca nodul nu este frunza(nod intern), se va scrie doar tipul nodului
+ (in acest caz ,0).
+ Daca nivelul curent este mai mare ca 1 , functia se va apela recursiv
+ pentru fiecare nod descendent al nodului curent , dar cu nivelul
+ decrementat.
+
+
